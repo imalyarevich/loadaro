@@ -164,7 +164,7 @@ body {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 4rem;
+  gap: 20px;
   animation: cardIn 0.25s ease-out;
 }
 
