@@ -32,16 +32,16 @@ export function LoadCard({ load, onAccept, onSkip }: LoadCardProps) {
             <div className="route-dot pickup-dot" />
             <div className="route-info">
               <span className="route-label">Pickup</span>
-              <span className="route-city">{load.pickUp.city}, {load.pickUp.state}</span>
+              <span className="route-city">{load.pickUp.city}, {load.pickUp.state} {load.pickUp.zip}</span>
               <span className="route-date">{load.pickUp.datetime}</span>
             </div>
           </div>
-          <div className="route-line" />
+          <div className="route-line">→</div>
           <div className="route-point delivery">
             <div className="route-dot delivery-dot" />
             <div className="route-info">
               <span className="route-label">Delivery</span>
-              <span className="route-city">{load.delivery.city}, {load.delivery.state}</span>
+              <span className="route-city">{load.delivery.city}, {load.delivery.state} {load.delivery.zip}</span>
               <span className="route-date">{load.delivery.datetime}</span>
             </div>
           </div>
@@ -90,9 +90,8 @@ export function LoadCard({ load, onAccept, onSkip }: LoadCardProps) {
             className="driver-input"
           />
         </div>
-      </div>
 
-      <div className="swipe-actions">
+        <div className="swipe-actions">
         <button className="action-btn skip-btn" onClick={onSkip}>
           <span className="action-icon">✕</span>
         </button>
@@ -104,6 +103,9 @@ export function LoadCard({ load, onAccept, onSkip }: LoadCardProps) {
           <span className="action-icon">{sending ? '...' : '♥'}</span>
         </button>
       </div>
+      </div>
+
+
     </div>
   );
 }
