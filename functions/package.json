@@ -1,0 +1,14 @@
+{
+  "name": "loadaro-functions",
+  "version": "1.0.0",
+  "description": "Loadaro backend for Telegram Load Board Mini App",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "firebase deploy --only functions",
+    "serve": "firebase emulators:start --only functions,firestore"
+  },
+  "dependencies": {
+    "firebase-functions": "latest",
+    "firebase-admin": "latest"
+  }
+}
