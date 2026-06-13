@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 
 export function useAuth() {
@@ -7,14 +7,19 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    getRedirectResult(auth).then(() => {
+      setLoading(false);
+    }).catch(() => {
+      setLoading(false);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
-      setLoading(false);
     });
     return unsubscribe;
   }, []);
 
-  const signIn = () => signInWithPopup(auth, googleProvider);
+  const signIn = () => signInWithRedirect(auth, googleProvider);
   const logout = () => signOut(auth);
 
   return { user, loading, signIn, logout };
