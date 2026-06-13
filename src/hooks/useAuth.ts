@@ -22,7 +22,7 @@ declare global {
   }
 }
 
-const FUNCTIONS_URL = import.meta.env.VITE_FIREBASE_FUNCTIONS_URL;
+const AUTH_FUNCTION_URL = import.meta.env.VITE_FIREBASE_TELEGRAM_AUTH_FUNCTION;
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -51,7 +51,7 @@ export function useAuth() {
 
     const authenticate = async () => {
       try {
-        const res = await fetch(`${FUNCTIONS_URL}/telegramAuth`, {
+        const res = await fetch(AUTH_FUNCTION_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ initData }),

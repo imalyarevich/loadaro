@@ -16,7 +16,7 @@ html, body, #root { height: 100%; overflow: hidden; }
 body { background: var(--bg); color: var(--text); }
 .app { height: 100%; display: flex; flex-direction: column; }
 
-.header { background: none; padding: 4em 1em 16px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.header { background: none; padding: 6em 1em 16px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 .header h1 { font-size: 18px; font-weight: 700; }
 .header-right { display: flex; align-items: center; gap: 8px; }
 .remaining-count { background: var(--surface-light); padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; color: var(--text2); }
