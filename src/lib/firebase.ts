@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 
 const requiredEnvVars = [
   'VITE_FIREBASE_API_KEY',
@@ -28,5 +28,4 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
 export const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;

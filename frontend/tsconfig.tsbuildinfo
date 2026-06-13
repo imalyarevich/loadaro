@@ -1,1 +1,0 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/filter.tsx","./src/components/header.tsx","./src/components/loadcard.tsx","./src/components/loadlist.tsx","./src/hooks/useloads.ts","./src/hooks/usetelegram.ts","./src/lib/firebase.ts","./src/types/load.ts"],"errors":true,"version":"5.9.3"}

@@ -1,5 +1,7 @@
+require('dotenv').config();
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const crypto = require('crypto');
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -7,7 +9,7 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-export const ingestEmail = functions.https.onRequest(async (req, res) => {
+const ingestEmail = functions.https.onRequest(async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type');
@@ -31,8 +33,8 @@ export const ingestEmail = functions.https.onRequest(async (req, res) => {
     }
 
     const loadData = {
-      orderId: data.order_id,
-      pickUp: {
+      order_id: data.order_id,
+      pick_up: {
         city: data.pick_up.city,
         state: data.pick_up.state,
         zip: data.pick_up.zip,
@@ -46,7 +48,7 @@ export const ingestEmail = functions.https.onRequest(async (req, res) => {
       },
       route: {
         stops: data.route?.stops ?? 1,
-        distanceMiles: data.route?.distance_miles ?? 0,
+        distance_miles: data.route?.distance_miles ?? 0,
       },
       broker: {
         name: data.broker.name,
@@ -54,29 +56,17 @@ export const ingestEmail = functions.https.onRequest(async (req, res) => {
         phone: data.broker.phone,
         email: data.broker.email,
       },
-      postInfo: {
-        postedAt: data.post_info?.posted_at ?? '',
-        expiresAt: data.post_info?.expires_at ?? '',
-        postedAmountUsd: data.post_info?.posted_amount_usd ?? 0,
-      },
       load: {
         type: data.load?.type ?? '',
-        vehicleRequired: data.load?.vehicle_required ?? '',
-        dockLevel: data.load?.dock_level ?? false,
+        vehicle_required: data.load?.vehicle_required ?? '',
+        dock_level: data.load?.dock_level ?? false,
         hazmat: data.load?.hazmat ?? false,
         pieces: data.load?.pieces ?? 0,
-        weightLbs: data.load?.weight_lbs ?? 0,
-        dimensions: {
-          length: data.load?.dimensions?.length ?? 0,
-          width: data.load?.dimensions?.width ?? 0,
-          height: data.load?.dimensions?.height ?? 0,
-          unit: data.load?.dimensions?.unit ?? 'in',
-        },
+        weight_lbs: data.load?.weight_lbs ?? 0,
         stackable: data.load?.stackable ?? false,
-        csaFastLoad: data.load?.csa_fast_load ?? false,
       },
       notes: data.notes ?? null,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      created_at: admin.firestore.FieldValue.serverTimestamp(),
     };
 
     const docRef = await db.collection('loads').add(loadData);
@@ -88,7 +78,7 @@ export const ingestEmail = functions.https.onRequest(async (req, res) => {
   }
 });
 
-export const contactBroker = functions.https.onRequest(async (req, res) => {
+const contactBroker = functions.https.onRequest(async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type');
@@ -125,12 +115,6 @@ export const contactBroker = functions.https.onRequest(async (req, res) => {
       `Weight: ${load.load.weightLbs} lbs | Pieces: ${load.load.pieces}`,
     ].filter(Boolean).join('\n');
 
-    console.log('--- EMAIL TO BROKER ---');
-    console.log(`To: ${load.broker.email}`);
-    console.log(`Subject: ${subject}`);
-    console.log(body);
-    console.log('----------------------');
-
     await db.collection('sent_emails').add({
       to: load.broker.email,
       subject,
@@ -148,3 +132,73 @@ export const contactBroker = functions.https.onRequest(async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+const telegramAuth = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  try {
+    const { initData } = req.body;
+
+    if (!initData) {
+      res.status(400).json({ error: 'Missing initData' });
+      return;
+    }
+
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (!botToken) {
+      res.status(500).json({ error: 'Bot token not configured' });
+      return;
+    }
+
+    const secretKey = crypto.createHash('sha256').update(botToken).digest();
+
+    const dataCheckString = initData
+      .split('&')
+      .filter((pair) => !pair.startsWith('hash='))
+      .sort()
+      .join('\n');
+
+    const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
+
+    const params = Object.fromEntries(new URLSearchParams(initData));
+    const hash = params.hash;
+
+    if (hmac !== hash) {
+      res.status(403).json({ error: 'Invalid initData' });
+      return;
+    }
+
+    const user = JSON.parse(params.user || '{}');
+
+    if (!user.id) {
+      res.status(400).json({ error: 'Missing user data' });
+      return;
+    }
+
+    const firebaseToken = await admin.auth().createCustomToken(String(user.id), {
+      telegramId: user.id,
+      firstName: user.first_name || '',
+      lastName: user.last_name || '',
+      username: user.username || '',
+    });
+
+    res.status(200).json({ token: firebaseToken, user });
+  } catch (error) {
+    console.error('Telegram auth error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+module.exports = { ingestEmail, contactBroker, telegramAuth };

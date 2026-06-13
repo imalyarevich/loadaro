@@ -111,7 +111,7 @@ function LoadCard({ load, onAccept, onSkip }: { load: Load; onAccept: () => void
 }
 
 export default function App() {
-  const { user, loading: authLoading, signIn, logout } = useAuth();
+  const { user, loading: authLoading, tgUser, logout } = useAuth();
   const { loads, loading, error } = useLoads(user);
   const [idx, setIdx] = useState(0);
 
@@ -131,11 +131,7 @@ export default function App() {
           <div className="auth-screen">
             <span className="auth-logo">📦</span>
             <h2>Welcome to Loadaro</h2>
-            <p className="auth-sub">Sign in to find available loads</p>
-            <button className="auth-btn" onClick={signIn}>
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" className="google-icon" />
-              Sign in with Google
-            </button>
+            <p className="auth-sub">Open this app in Telegram</p>
           </div>
         </main>
       </div>
@@ -152,7 +148,7 @@ export default function App() {
       <header className="header">
         <h1>Loadaro</h1>
         <div className="header-right">
-          <span className="user-name">{user.displayName}</span>
+          <span className="user-name">{tgUser?.name || user.displayName || 'Driver'}</span>
           <span className="remaining-count">{remaining} left</span>
           <button className="reset-btn" onClick={() => setIdx(0)} title="Reset">↺</button>
           <button className="reset-btn" onClick={logout} title="Sign out">
