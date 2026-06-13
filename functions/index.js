@@ -108,7 +108,7 @@ const contactBroker = functions.https.onRequest(async (req, res) => {
       driverPhone ? `Phone: ${driverPhone}` : '',
       '',
       `Load #${load.orderId}`,
-      `Pickup: ${load.pickUp.city}, ${load.pickUp.state} ${load.pickUp.zip}`,
+      `Pickup: ${load.pickUp.city}, ${load.pickUp.state} ${load.pick_up.zip}`,
       `Delivery: ${load.delivery.city}, ${load.delivery.state} ${load.delivery.zip}`,
       `Distance: ${load.route.distanceMiles} miles`,
       `Vehicle: ${load.load.vehicleRequired}`,
@@ -133,7 +133,9 @@ const contactBroker = functions.https.onRequest(async (req, res) => {
   }
 });
 
-const telegramAuth = functions.https.onRequest(async (req, res) => {
+const telegramAuth = functions.https.onRequest({
+  secrets: ['TELEGRAM_BOT_TOKEN']
+}, async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type');
@@ -166,7 +168,7 @@ const telegramAuth = functions.https.onRequest(async (req, res) => {
 
     const dataCheckString = initData
       .split('&')
-      .filter((pair) => !pair.startsWith('hash='))
+      .filter((pair) => !pair.startsWith('hash=') && !pair.startsWith('signature='))
       .sort()
       .join('\n');
 
